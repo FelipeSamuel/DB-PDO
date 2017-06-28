@@ -47,8 +47,8 @@ class DB
       {
         switch ($this->dbDriver) {
           case 'mysql':
-            self::$instance = new PDO($this->dbDriver.':host='.$this->dbHost.';dbname='.$this->dbName.';charset='.$this->dbCharset, $this->dbUser, $this->dbPass);
-            break;
+          self::$instance = new PDO($this->dbDriver.':host='.$this->dbHost.';dbname='.$this->dbName.';charset='.$this->dbCharset, $this->dbUser, $this->dbPass);
+          break;
           default:
           //
           break;
@@ -56,29 +56,36 @@ class DB
 
       }catch(Exception $e)
       {
-        echo $e->getMessage();
+        return null;
       }
     }
     return self::$instance;
   }
 
-  private function execute($query, $retornaId = false)
+
+  private function execute($query, $retornaId = false, $retornaStmt = true)
   {
     $pdo = $this->connect();
-
-    $stmt = $pdo->prepare($query);
-    $stmt->execute();
-    if($stmt->rowCount() > 0)
-    {
-      if($retornaId)
+    if($pdo != null){
+      $stmt = $pdo->prepare($query);
+      $executou = $stmt->execute();
+      if($stmt->rowCount() > 0)
       {
-        return $pdo->lastInsertId();
+        if($retornaId)
+        {
+          return $pdo->lastInsertId();
+        }
+      }else
+      {
+        return $executou;
       }
-    }else
-    {
-      return false;
+      if($retornaStmt)
+      {
+        return $stmt;
+      }else{
+        return $executou;
+      }
     }
-    return $stmt;
   }
 
   /**
@@ -97,7 +104,7 @@ class DB
     //cria a query
     $query = "INSERT INTO {$tabela} ({$campos}) VALUES ({$valores})";
     //retorna se inseriu ou nao
-    return $this->execute($query, $retornaId);
+    return $this->execute($query, $retornaId, false);
   }
 
   /*
@@ -120,7 +127,7 @@ class DB
     $condicao = ($condicao) ? " WHERE {$condicao}" : null; //se existir uma condicao ele atribui, se nao ele modifica tudo da tabela
     $query = "UPDATE {$tabela} SET {$campos} {$condicao}"; //query usada pra atualizar os registros
 
-    return $this->execute($query, $retornaId);
+    return $this->execute($query, $retornaId, false);
   }
 
   /*
@@ -142,7 +149,7 @@ class DB
     $result = $this->execute($query);
     if(is_bool($result)){//se o numero de linhas de retorno for igual a 0...
       if(!$result){
-        return false;
+        return null;
       }
     }else{
       while($linha = $result->fetch(PDO::FETCH_OBJ)){ //transorma os dados do bd em um array
@@ -167,25 +174,25 @@ class DB
   */
   public function innerJoin($tabela, array $tabelas, $campos = '*', $condicao = null)
   {
-      $query = "SELECT {$campos} FROM {$tabela} {$condicao}";
+    $query = "SELECT {$campos} FROM {$tabela} {$condicao}";
 
-      foreach ($tabelas as $key => $tab) {
-        $query .= " INNER JOIN ".$key." ON ".$tab;
-      }
-      $result = $this->execute($query);
+    foreach ($tabelas as $key => $tab) {
+      $query .= " INNER JOIN ".$key." ON ".$tab;
+    }
+    $result = $this->execute($query);
 
-      if(is_bool($result)){//se o numero de linhas de retorno for igual a 0...
-        if(!$result){
-          return false;
-        }
-      }
-      else{
-        while($linha = $result->fetch(PDO::FETCH_OBJ)){ //transorma os dados do bd em um array
-          $dados[] = $linha; // tribue os dados a outro array
-        }
-        return $dados;
+    if(is_bool($result)){//se o numero de linhas de retorno for igual a 0...
+      if(!$result){
+        return null;
       }
     }
+    else{
+      while($linha = $result->fetch(PDO::FETCH_OBJ)){ //transorma os dados do bd em um array
+        $dados[] = $linha; // tribue os dados a outro array
+      }
+      return $dados;
+    }
+  }
 
   /*
   * $tabela = Nome da tabela para a remoção, deve ser identica ao banco de dados
@@ -198,7 +205,7 @@ class DB
   {
     $condicao = ($condicao) ? " WHERE {$condicao}" : null;
     $query = "DELETE FROM {$tabela} {$condicao}";
-    return $this->execute($query, $retornaId);
+    return $this->execute($query, $retornaId, false);
   }
 
 
