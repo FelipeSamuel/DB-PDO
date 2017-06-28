@@ -167,7 +167,7 @@ class DB
   */
   public function innerJoin($tabela, array $tabelas, $campos = '*', $condicao = null)
   {
-      $query = "SELECT {$campos} FROM {$tabela}";
+      $query = "SELECT {$campos} FROM {$tabela} {$condicao}";
 
       foreach ($tabelas as $key => $tab) {
         $query .= " INNER JOIN ".$key." ON ".$tab;
