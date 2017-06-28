@@ -97,7 +97,7 @@ class DB
     //cria a query
     $query = "INSERT INTO {$tabela} ({$campos}) VALUES ({$valores})";
     //retorna se inseriu ou nao
-    return $this->executa($query, $retornaId);
+    return $this->execute($query, $retornaId);
   }
 
   /*
@@ -120,7 +120,7 @@ class DB
     $condicao = ($condicao) ? " WHERE {$condicao}" : null; //se existir uma condicao ele atribui, se nao ele modifica tudo da tabela
     $query = "UPDATE {$tabela} SET {$campos} {$condicao}"; //query usada pra atualizar os registros
 
-    return $this->executa($query, $retornaId);
+    return $this->execute($query, $retornaId);
   }
 
   /*
@@ -139,7 +139,7 @@ class DB
     //monta a query
     $query = "SELECT {$campos} FROM {$tabela} {$condicao}";
     //executa a query
-    $result = $this->executa($query);
+    $result = $this->execute($query);
     if(is_bool($result)){//se o numero de linhas de retorno for igual a 0...
       if(!$result){
         return false;
@@ -172,7 +172,7 @@ class DB
       foreach ($tabelas as $key => $tab) {
         $query .= " INNER JOIN ".$key." ON ".$tab;
       }
-      $result = $this->executa($query);
+      $result = $this->execute($query);
 
       if(is_bool($result)){//se o numero de linhas de retorno for igual a 0...
         if(!$result){
@@ -198,7 +198,7 @@ class DB
   {
     $condicao = ($condicao) ? " WHERE {$condicao}" : null;
     $query = "DELETE FROM {$tabela} {$condicao}";
-    return $this->executa($query, $retornaId);
+    return $this->execute($query, $retornaId);
   }
 
 
